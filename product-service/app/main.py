@@ -1,11 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import products
-from app.database import engine
-from app.models import product
+from app.routers import products, cart, orders
+from app.database import engine, Base
 
 # Veritabanı tablolarını oluştur
-product.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Product Service",
@@ -23,11 +22,9 @@ app.add_middleware(
 )
 
 # API rotalarını ekle
-app.include_router(
-    products.router,
-    prefix="api/routers",
-    tags=["products"]
-)
+app.include_router(products.router, prefix="/api", tags=["products"])
+app.include_router(cart.router, prefix="/api", tags=["cart"])
+app.include_router(orders.router, prefix="/api", tags=["orders"])
 
 @app.get("/", tags=["health"])
 def health_check():
@@ -35,4 +32,8 @@ def health_check():
         "service": "Product Service",
         "status": "healthy",
         "version": "1.0.0"
-    } 
+    }
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to Product Service"} 

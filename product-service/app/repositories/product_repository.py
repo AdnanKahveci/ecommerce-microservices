@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from app.models.product import Product, Category, Cart, CartItem, Order, OrderItem
-from app.schemas.product import ProductCreate, ProductUpdate, CartItemCreate, OrderCreate
+from app.models.product import Product, Category
+from app.schemas.product import ProductCreate, ProductUpdate
 from typing import List, Optional
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
 class ProductRepository:
     def __init__(self, db: Session):
@@ -60,109 +60,4 @@ class ProductRepository:
             return False
         self.db.delete(db_product)
         self.db.commit()
-        return True
-
-    def get_or_create_cart(self, user_id: int) -> Cart:
-        cart = self.db.query(Cart).filter(Cart.user_id == user_id).first()
-        if not cart:
-            cart = Cart(user_id=user_id)
-            self.db.add(cart)
-            self.db.commit()
-            self.db.refresh(cart)
-        return cart
-
-    def add_to_cart(self, user_id: int, item: CartItemCreate) -> CartItem:
-        cart = self.get_or_create_cart(user_id)
-        product = self.get_product(item.product_id)
-        if not product:
-            raise HTTPException(status_code=404, detail="Product not found")
-        if not product.is_active:
-            raise HTTPException(status_code=400, detail="Product is not active")
-        if product.stock < item.quantity:
-            raise HTTPException(status_code=400, detail="Not enough stock")
-
-        cart_item = CartItem(
-            cart_id=cart.id,
-            product_id=item.product_id,
-            quantity=item.quantity
-        )
-        self.db.add(cart_item)
-        self.db.commit()
-        self.db.refresh(cart_item)
-        return cart_item
-
-    def remove_from_cart(self, user_id: int, cart_item_id: int) -> bool:
-        cart = self.get_or_create_cart(user_id)
-        cart_item = self.db.query(CartItem).filter(
-            CartItem.id == cart_item_id,
-            CartItem.cart_id == cart.id
-        ).first()
-        if not cart_item:
-            return False
-        self.db.delete(cart_item)
-        self.db.commit()
-        return True
-
-    def get_cart(self, user_id: int) -> Optional[Cart]:
-        return self.db.query(Cart).filter(Cart.user_id == user_id).first()
-
-    def clear_cart(self, user_id: int) -> bool:
-        cart = self.get_cart(user_id)
-        if not cart:
-            return False
-        self.db.query(CartItem).filter(CartItem.cart_id == cart.id).delete()
-        self.db.commit()
-        return True
-
-    def create_order(self, user_id: int, order: OrderCreate) -> Order:
-        # Sipariş oluştur
-        db_order = Order(
-            user_id=user_id,
-            total_amount=order.total_amount,
-            status="pending"
-        )
-        self.db.add(db_order)
-        self.db.commit()
-        self.db.refresh(db_order)
-
-        # Sipariş öğelerini ekle ve stok kontrolü yap
-        for item in order.items:
-            product = self.get_product(item.product_id)
-            if not product:
-                self.db.delete(db_order)
-                self.db.commit()
-                raise HTTPException(status_code=404, detail=f"Product {item.product_id} not found")
-            if product.stock < item.quantity:
-                self.db.delete(db_order)
-                self.db.commit()
-                raise HTTPException(status_code=400, detail=f"Not enough stock for product {product.name}")
-
-            # Stok güncelle
-            product.stock -= item.quantity
-            
-            # Sipariş öğesini ekle
-            order_item = OrderItem(
-                order_id=db_order.id,
-                product_id=item.product_id,
-                quantity=item.quantity,
-                price=item.price
-            )
-            self.db.add(order_item)
-
-        self.db.commit()
-        return db_order
-
-    def get_user_orders(self, user_id: int, skip: int = 0, limit: int = 100) -> List[Order]:
-        return self.db.query(Order).filter(Order.user_id == user_id).offset(skip).limit(limit).all()
-
-    def get_order(self, order_id: int) -> Optional[Order]:
-        return self.db.query(Order).filter(Order.id == order_id).first()
-
-    def update_order_status(self, order_id: int, status: str) -> Optional[Order]:
-        order = self.get_order(order_id)
-        if not order:
-            return None
-        order.status = status
-        self.db.commit()
-        self.db.refresh(order)
-        return order 
+        return True 

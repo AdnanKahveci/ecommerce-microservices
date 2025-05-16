@@ -66,10 +66,4 @@ Email: admin@example.com
 Password: admin123
 ```
 
-## Geliştirme
-
-Her servis için ayrı bir README dosyası bulunmaktadır:
-- [Frontend README](./frontend/README.md)
-- [User Service README](./user-service/README.md)
-- [Product Service README](./product-service/README.md)
 

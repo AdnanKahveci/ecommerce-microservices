@@ -45,19 +45,32 @@ Uygulama şu adreslerde çalışacaktır:
 
 ## API Endpoints
 
-### User Service (http://localhost:3001)
-- POST /api/auth/register - Yeni kullanıcı kaydı
-- POST /api/auth/login - Kullanıcı girişi
-- GET /api/users/profile - Kullanıcı profili bilgileri
-- PUT /api/users/profile - Profil güncelleme
-
 ### Product Service (http://localhost:3002)
-- GET /api/products - Tüm ürünleri listele
-- GET /api/products/:id - Ürün detayı
-- POST /api/products - Yeni ürün ekle (Admin)
-- PUT /api/products/:id - Ürün güncelle (Admin)
-- DELETE /api/products/:id - Ürün sil (Admin)
 
+#### Ürün (Product)
+- GET    /api/products/                → Tüm ürünleri listele
+- GET    /api/products/{product_id}    → Ürün detayı
+- POST   /api/products/                → Yeni ürün ekle (Admin)
+- PUT    /api/products/{product_id}    → Ürün güncelle (Admin)
+- DELETE /api/products/{product_id}    → Ürün sil (Admin)
+
+#### Sepet (Cart)
+- GET    /api/cart/                    → Kullanıcının sepetini getir
+- POST   /api/cart/items/              → Sepete ürün ekle
+- DELETE /api/cart/items/{item_id}     → Sepetten ürün çıkar
+- DELETE /api/cart/                    → Sepeti tamamen temizle
+
+#### Sipariş (Order)
+- POST   /api/orders/                  → Sipariş oluştur
+- GET    /api/orders/                  → Kullanıcının siparişlerini getir
+- GET    /api/orders/{order_id}        → Sipariş detayı
+- PUT    /api/orders/{order_id}/status → Sipariş durumunu güncelle (Admin)
+
+### User Service (http://localhost:3001)
+- POST /api/auth/register              → Yeni kullanıcı kaydı
+- POST /api/auth/login                 → Kullanıcı girişi
+- GET  /api/users/profile              → Kullanıcı profili bilgileri
+- PUT  /api/users/profile              → Profil güncelleme
 
 ## Varsayılan Admin Kullanıcısı
 
